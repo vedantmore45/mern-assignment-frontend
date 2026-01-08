@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '../store';
-import { fetchSubscriptions } from '../store/subscriptionsSlice';
+import { fetchSubscriptions, addSubscription, cancelSubscription } from '../store/subscriptionsSlice';
 
 export const SubscriptionsTable = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -12,6 +12,7 @@ export const SubscriptionsTable = () => {
   );
 
   useEffect(() => {
+    // Load subscriptions from server on mount
     dispatch(fetchSubscriptions());
   }, [dispatch]);
 
@@ -20,9 +21,29 @@ export const SubscriptionsTable = () => {
   return (
     <>
       <h3>Active subscriptions: {activeCount}</h3>
+
+      <button
+        onClick={async () => {
+          await dispatch(addSubscription());
+          dispatch(fetchSubscriptions());
+        }}
+        style={{ marginBottom: '16px' }}
+      >
+        ➕ Add subscription
+      </button>
+
       <ul>
         {data.map((s: any) => (
-          <li key={s.id}>{s.status}</li>
+          <li key={s.id}>{s.id} — {s.status}
+            {s.status === 'active' && (
+              <button
+                onClick={() => {
+                  dispatch(cancelSubscription()).then(() => dispatch(fetchSubscriptions()));
+                }}
+              >
+                Cancel One Active Subscription
+              </button>
+            )}</li>
         ))}
       </ul>
     </>
